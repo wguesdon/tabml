@@ -1,0 +1,40 @@
+{
+  "categorical_encoding": {
+    "method": "onehot",
+    "handle_unknown": "ignore",
+    "high_cardinality_threshold": 100,
+    "high_cardinality_method": "target"
+  },
+  "text_processing": {
+    "method": "tfidf",
+    "max_features": 30,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_df": 0.95
+  },
+  "scaling": {
+    "method": "standard",
+    "feature_range": [
+      0,
+      1
+    ],
+    "with_centering": true
+  },
+  "imputation": {
+    "numeric_strategy": "median",
+    "categorical_strategy": "most_frequent",
+    "text_strategy": "constant",
+    "constant_fill_value": "missing",
+    "add_indicator": true
+  },
+  "drop_columns": [
+    "PassengerId",
+    "Group",
+    "Cabin"
+  ],
+  "datetime_features": false,
+  "handle_zeros_as_missing": false
+}

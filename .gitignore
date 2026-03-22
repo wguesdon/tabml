@@ -1,0 +1,158 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Model files
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Log files
+logs/
+*.log
+spaceship_output.log
+
+# Output files
+**/output/
+**/outputs/
+**/Output/
+**/Outputs/
+submissions/
+results/
+examples/*.png
+examples/*_config.json
+*.png
+*.jpg
+*.jpeg
+
+# CatBoost generated files
+**/catboost_info/
+
+# MLflow artifacts
+mlruns/
+mlflow/
+mlflow.db
+mlflow-artifacts/
+
+# Neptune.ai
+.neptune/
+neptune/
+offline_runs/
+
+# Data files (keep locally but exclude from repo)
+data/
+!data/.gitkeep
+!data/README.md
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+examples/PS5E8/example_notebooks/
+**/example_notebooks/
+
+# Notes and documentation folders
+**/notes/

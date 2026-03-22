@@ -1,0 +1,183 @@
+name: Benchmark Regression Tests
+
+on:
+  # Run on pull requests to main
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'tabml/**'
+      - 'tests/**'
+      - 'setup.py'
+
+  # Run on pushes to main (to update baseline)
+  push:
+    branches: [ main ]
+    paths:
+      - 'tabml/**'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Benchmark suite to run'
+        required: true
+        default: 'sklearn-small'
+        type: choice
+        options:
+          - sklearn-small
+          - openml-cc18
+          - pmlb-mini
+      max_datasets:
+        description: 'Max datasets (for testing)'
+        required: false
+        default: ''
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Full history for baseline comparison
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[benchmarks,dev]"
+
+    - name: Cache benchmark data
+      uses: actions/cache@v3
+      with:
+        path: ~/.tabml/benchmark_cache
+        key: benchmark-data-${{ hashFiles('tabml/benchmarks/**') }}
+        restore-keys: |
+          benchmark-data-
+
+    - name: Download baseline results
+      uses: actions/download-artifact@v4
+      with:
+        name: benchmark-baselines
+        path: benchmarks/results/
+      continue-on-error: true  # First run won't have baseline
+
+    - name: Run quick benchmarks
+      id: benchmark
+      run: |
+        # Run sklearn-small benchmark (fast for CI)
+        python -m tabml.benchmarks.cli run sklearn-small \
+          --max-datasets 3 \
+          --n-folds 3 \
+          --models xgboost lightgbm
+      continue-on-error: false
+
+    - name: Compare with baseline (PR only)
+      if: github.event_name == 'pull_request'
+      run: |
+        # Compare with baseline and fail if regression detected
+        python -m tabml.benchmarks.cli compare sklearn-small \
+          --tolerance 0.02 \
+          --fail-on-regression
+      continue-on-error: false
+
+    - name: Update baseline (main branch only)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        # Set new baseline after merge to main
+        python -m tabml.benchmarks.cli baseline set sklearn-small
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: benchmark-results
+        path: benchmarks/results/
+        retention-days: 90
+
+    - name: Upload baseline (main branch only)
+      uses: actions/upload-artifact@v4
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      with:
+        name: benchmark-baselines
+        path: benchmarks/results/*_baseline.json
+        retention-days: 365
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const resultsPath = 'benchmarks/results/sklearn-small_latest.json';
+
+          if (fs.existsSync(resultsPath)) {
+            const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+
+            let comment = '## 🎯 Benchmark Results\n\n';
+            comment += '| Model | Metric | Score |\n';
+            comment += '|-------|--------|-------|\n';
+
+            // Add aggregate results
+            if (results.aggregate) {
+              for (const [model, metrics] of Object.entries(results.aggregate)) {
+                for (const [metric, stats] of Object.entries(metrics)) {
+                  comment += `| ${model} | ${metric} | ${stats.mean.toFixed(4)} ± ${stats.std.toFixed(4)} |\n`;
+                }
+              }
+            }
+
+            comment += '\n✅ Benchmark completed successfully!\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+
+  # Optional: Full benchmark on schedule (weekly)
+  full-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    # Run weekly on Sunday at 2 AM UTC
+    # Uncomment to enable:
+    # schedule:
+    #   - cron: '0 2 * * 0'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[benchmarks,dev]"
+
+    - name: Run full OpenML-CC18 benchmark
+      run: |
+        python -m tabml.benchmarks.cli run openml-cc18 \
+          --max-datasets 20 \
+          --save-baseline
+
+    - name: Upload full results
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-benchmark-results
+        path: benchmarks/results/
+        retention-days: 365

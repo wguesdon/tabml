@@ -1,0 +1,19 @@
+# Optional dependencies for TabML
+# Install specific extras with: pip install tabml[extra_name]
+# Or install from this file: pip install -r requirements-optional.txt
+
+# AutoML
+autogluon>=1.0.0
+
+# Neural Networks (already in requirements-gpu.txt)
+# pytorch-tabnet>=4.1.0
+# torch>=2.0.0
+
+# Additional AutoML frameworks (future additions)
+# auto-sklearn>=0.15.0
+# h2o>=3.40.0
+# tpot>=0.12.0
+# flaml>=2.0.0
+
+# For AutoGluon with GPU support
+# autogluon[torch]>=1.0.0
