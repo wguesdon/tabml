@@ -4,7 +4,7 @@ TabML - Tabular Machine Learning Package
 A comprehensive package for handling tabular data machine learning tasks.
 """
 
-__version__ = "0.5.2"
+__version__ = "0.6.0"
 
 # Initialize package and download required data
 try:
@@ -29,6 +29,26 @@ from .advanced_features import AdvancedFeatureEngineer
 from .ensemble import OOFEnsemble, AutoEnsemble
 from .oof_manager import OOFManager
 from .eda import EDAAnalyzer
+from .tracking import ModelTracker
+
+# Import neural network models (optional dependencies)
+try:
+    from .nn_models import (
+        RealMLPModel,
+        TabMModel,
+        FTTransformerModel,
+        EmbeddingMLPModel,
+        LogisticRegressionModel,
+    )
+    NN_MODEL_IMPORTS = [
+        "RealMLPModel",
+        "TabMModel",
+        "FTTransformerModel",
+        "EmbeddingMLPModel",
+        "LogisticRegressionModel",
+    ]
+except ImportError:
+    NN_MODEL_IMPORTS = []
 
 # Import MLflow tracking if available
 try:
@@ -70,4 +90,5 @@ __all__ = [
     "AutoEnsemble",
     "OOFManager",
     "EDAAnalyzer",
-] + MLFLOW_IMPORTS + AUTOGLUON_IMPORTS
+    "ModelTracker",
+] + NN_MODEL_IMPORTS + MLFLOW_IMPORTS + AUTOGLUON_IMPORTS

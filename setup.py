@@ -79,6 +79,11 @@ setup(
             "torch>=2.0.0",
             "tensorboard>=2.14.0",
         ],
+        "nn": [
+            "pytabkit>=1.7.0",
+            "torch>=2.0.0",
+            "torch-frame>=1.6.0",
+        ],
         "tracking": [
             "mlflow>=2.8.0,<3.0",  # DagsHub requires MLflow 2.x
             "wandb>=0.15.0",
