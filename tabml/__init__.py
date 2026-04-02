@@ -47,7 +47,7 @@ try:
         "EmbeddingMLPModel",
         "LogisticRegressionModel",
     ]
-except ImportError:
+except (ImportError, NameError):
     NN_MODEL_IMPORTS = []
 
 # Import MLflow tracking if available

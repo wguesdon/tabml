@@ -53,6 +53,13 @@ except ImportError:
     TORCH_AVAILABLE = False
     logger.warning("PyTorch not installed. Install with: uv add 'torch>=2.0.0'")
 
+    # Provide a stub so that class Foo(nn.Module) doesn't raise NameError
+    # at import time. Actual instantiation will fail with a clear message.
+    import types
+
+    nn = types.ModuleType("torch.nn")
+    nn.Module = object
+
 
 class RealMLPModel(BaseModel):
     """Wrapper for pytabkit RealMLP_TD.
