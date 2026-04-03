@@ -41,6 +41,7 @@ pip install autogluon[torch]
 ```
 
 ### Optional Dependencies
+- `.[nn]` - Neural network models (pytabkit, torch, torch-frame)
 - `.[nlp]` - NLTK for text processing
 - `.[gpu]` - PyTorch and TabNet support
 - `.[tracking]` - Experiment tracking (MLflow, W&B, TensorBoard)
@@ -53,11 +54,11 @@ pip install autogluon[torch]
 # Install directly from GitHub in a Kaggle notebook
 !pip install git+https://github.com/wguesdon/tabml.git
 
-# With all dependencies
-!pip install git+https://github.com/wguesdon/tabml.git#egg=tabml[all]
+# With neural network models
+!pip install "tabml[nn] @ git+https://github.com/wguesdon/tabml.git"
 
-# With specific extras (e.g., AutoGluon)
-!pip install git+https://github.com/wguesdon/tabml.git#egg=tabml[autogluon]
+# With all dependencies
+!pip install "tabml[all] @ git+https://github.com/wguesdon/tabml.git"
 ```
 
 **Note:** Kaggle notebooks include most core dependencies (pandas, numpy, scikit-learn, xgboost, lightgbm, catboost) pre-installed, so the basic installation should work without issues.
@@ -163,16 +164,50 @@ final_predictions = ensemble.predict_stacking(test_preds)
 - `AutoGluonModel` - Automatic model selection and ensembling (requires autogluon)
 
 ### Neural Networks
+- `RealMLPModel` - pytabkit RealMLP with piecewise-linear representations (requires `tabml[nn]`)
+- `TabMModel` - pytabkit TabM with multiplicative bilinear interactions (requires `tabml[nn]`)
+- `FTTransformerModel` - Custom PyTorch FT-Transformer (3-layer, 4 heads) (requires `tabml[nn]`)
+- `EmbeddingMLPModel` - PyTorch MLP with learned categorical embeddings (requires `tabml[nn]`)
 - `TabNetModel` - Attention-based neural network for tabular data (requires pytorch-tabnet)
 
 ### Linear
 - `RidgeModel` - L2 regularized regression
 - `LinearModel` - Standard linear regression
+- `LogisticRegressionModel` - sklearn LogisticRegression for meta-learner stacking
 
 ### Ensembles
 - `VotingEnsemble` - Simple voting ensemble
 - `OOFEnsemble` - Out-of-fold stacking ensemble
 - `AutoEnsemble` - Automatic ensemble selection
+
+### Model Tracking (SQLite)
+```python
+from tabml import ModelTracker
+
+tracker = ModelTracker(db_path="experiments.db")
+
+# Log a model
+tracker.log_model(
+    name="xgb_v200", version=200, model_type="xgb",
+    cv_score=0.972, fold_scores=[0.970, 0.973, 0.974, 0.972, 0.972],
+    metric="balanced_accuracy", params={"max_depth": 6},
+    feature_group="v2_features", n_features=516,
+    oof_path="predictions/oof_xgb_v2.npy",
+    test_pred_path="predictions/pred_xgb_v2.npy",
+)
+
+# Update with leaderboard score
+tracker.update_lb_score("xgb_v200", 0.971, "public")
+
+# View leaderboard
+df = tracker.get_leaderboard()
+
+# Analyze model diversity for ensemble selection
+corr_matrix = tracker.get_diversity_matrix()  # OOF prediction correlations
+
+# Compare CV vs LB to detect overfitting
+tracker.compare_cv_lb()
+```
 
 ## Features
 
@@ -219,8 +254,11 @@ tabml/
 │   ├── data.py                 # Data loading
 │   ├── features.py             # Feature engineering
 │   ├── advanced_features.py    # Text/date features
-│   ├── models.py               # Model implementations
-│   ├── ensemble.py             # Ensemble methods
+│   ├── models.py               # GBDT model wrappers (XGBoost, LightGBM, CatBoost)
+│   ├── nn_models.py            # NN model wrappers (RealMLP, TabM, FT-Transformer, EmbeddingMLP)
+│   ├── ensemble.py             # Ensemble methods (hill climbing, stacking, rank averaging)
+│   ├── oof_manager.py          # OOF prediction save/load manager
+│   ├── tracking.py             # SQLite model tracker (CV scores, LB scores, diversity matrix)
 │   ├── pipeline.py             # End-to-end pipeline
 │   ├── evaluate.py             # Cross-validation
 │   └── utils.py                # Helper functions

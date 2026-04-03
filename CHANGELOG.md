@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-04-02
+
+### Fixed
+- **nn_models.py import crash** - When PyTorch is not installed, `class _FTTransformerNet(nn.Module)` raised `NameError` because `nn` was undefined. Fixed by providing a stub `nn.Module = object` via `types.ModuleType` when the torch import fails.
+- **__init__.py** now catches `NameError` in addition to `ImportError` when importing nn_models as a fallback.
+
+## [0.6.0] - 2026-04-01
+
+### Added
+- **Neural Network Model Wrappers** (`nn_models.py`):
+  - `RealMLPModel` - Wrapper for pytabkit RealMLP_TD (piecewise-linear representations, internal ensemble)
+  - `TabMModel` - Wrapper for pytabkit TabM_D (multiplicative bilinear interactions)
+  - `FTTransformerModel` - Custom PyTorch FT-Transformer (3-layer, 4 heads, dim=64)
+  - `EmbeddingMLPModel` - Custom PyTorch MLP with categorical embeddings (512>256>128)
+  - `LogisticRegressionModel` - sklearn LogisticRegression wrapper for Level 4 meta-learner stacking
+- **SQLite Model Tracker** (`tracking.py`):
+  - `ModelTracker` class for logging models, CV scores, LB scores, and parameters
+  - Methods: `log_model()`, `update_lb_score()`, `get_leaderboard()`, `get_diversity_matrix()`, `compare_cv_lb()`, `export_csv()`
+  - OOF prediction correlation matrix for ensemble diversity analysis
+- New `nn` extras group in setup.py (pytabkit, torch, torch-frame)
+
 ## [Unreleased]
 
 ### Added
