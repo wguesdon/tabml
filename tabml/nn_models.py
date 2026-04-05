@@ -168,11 +168,14 @@ class TabMModel(BaseModel):
                 "Install with: uv add 'pytabkit>=1.7.0'"
             )
         default_params = {
-            "arch": "tabm-mini-normal",
+            "arch_type": "tabm-mini-normal",
             "device": "cpu",
             "verbosity": 0,
         }
         if params:
+            # Support legacy "arch" key, map to "arch_type"
+            if "arch" in params and "arch_type" not in params:
+                params["arch_type"] = params.pop("arch")
             default_params.update(params)
         super().__init__("TabM", default_params)
 
